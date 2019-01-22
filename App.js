@@ -16,6 +16,7 @@ export default class App extends React.Component {
     this.state = {
       tareas: [],
       texto: '',
+      cargando: true,
     };
   }
 
@@ -37,6 +38,7 @@ export default class App extends React.Component {
       tareas: nuevasTareas,
       texto: '',
     });
+    this.cargarBBDD();
   };
 
   eliminarTarea = (id) => {
@@ -46,7 +48,8 @@ export default class App extends React.Component {
     this.guardarBBDD(nuevasTareas);
     this.setState({
       tareas: nuevasTareas,
-    })
+    });
+    this.cargarBBDD();
   }
 
   guardarBBDD = (tareas) => { 
@@ -64,9 +67,18 @@ export default class App extends React.Component {
   }
 
   cargarBBDD = () => {
+    this.setState({
+      cargando: true,
+    })
     AsyncStorage.getItem('@AppToDo:tareas')
       .then((valor) => {
         console.log(JSON.parse(valor));
+        //Crear timeout en la APP de 2 segundos
+        setTimeout(() => {
+          this.setState({
+            cargando: false,
+          })
+        }, 2000)
         if (valor !== null){
           const nuevasTareas = JSON.parse(valor);
           this.setState({
@@ -76,7 +88,10 @@ export default class App extends React.Component {
 
       })
       .catch((error) => {
-        console.log(error)
+        console.log(error);
+        this.setState({
+          cargando: false,
+        })
       })
   }
 
@@ -99,7 +114,7 @@ export default class App extends React.Component {
           }}
         />
 
-        <Body tareas={this.state.tareas} eliminar={this.eliminarTarea} />
+        <Body tareas={this.state.tareas} cargando={this.state.cargando} eliminar={this.eliminarTarea} />
       </View>
     );
   }
